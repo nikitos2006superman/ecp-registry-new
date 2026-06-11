@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Главная панель</div>
+        <div class="page-subtitle">Обзор состояния учёта ЭЦП на сегодня</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ active_certs }}</div>
+        <div class="stat-label">Действующих сертификатов</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-value">{{ active_poa }}</div>
+        <div class="stat-label">Действующих МЧД</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-value">{{ issued_tokens }}</div>
+        <div class="stat-label">Выданных токенов</div>
+    </div>
+    {% if current_user.role in ('admin', 'hr_specialist') %}
+    <div class="stat-card">
+        <div class="stat-value">{{ total_employees }}</div>
+        <div class="stat-label">Активных сотрудников</div>
+    </div>
+    {% endif %}
+</div>
+
+{% if expiring %}
+<div class="card">
+    <div class="card-header">
+        ⚠ Сертификаты с приближающимся истечением (ближайшие 30 дней)
+    </div>
+    <div class="table-wrap" style="border: none;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Серийный номер</th>
+                    <th>Тип</th>
+                    <th>Владелец</th>
+                    <th>Должность</th>
+                    <th>Действителен до</th>
+                    <th>Осталось</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in expiring %}
+                {% set days = c.valid_until|days_left %}
+                <tr class="{% if days <= 7 %}row-danger{% elif days <= 14 %}row-warning{% endif %}">
+                    <td><code>{{ c.serial_number[:18] }}...</code></td>
+                    <td><span class="badge badge-{{ c.signature_type|lower }}">{{ c.signature_type }}</span></td>
+                    <td>{{ c.last_name }} {{ c.first_name[0] }}.{% if c.middle_name %} {{ c.middle_name[0] }}.{% endif %}</td>
+                    <td class="text-muted">{{ c.position }}</td>
+                    <td>{{ c.valid_until|rudate }}</td>
+                    <td>
+                        {% if days <= 7 %}
+                            <span class="text-danger">{{ days }} дн.</span>
+                        {% elif days <= 14 %}
+                            <span class="text-warning">{{ days }} дн.</span>
+                        {% else %}
+                            {{ days }} дн.
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('certificate_detail', cert_id=c.id) }}">Открыть →</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if recent_audit %}
+<div class="card">
+    <div class="card-header">Последние действия пользователей</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Время</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Объект</th>
+                <th>Подробности</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in recent_audit %}
+            <tr>
+                <td class="text-muted">{{ a.timestamp[:16] }}</td>
+                <td>{{ a.username or '—' }}</td>
+                <td>{{ a.action }}</td>
+                <td>{{ a.entity_type }} #{{ a.entity_id }}</td>
+                <td class="text-muted">{{ a.details }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}
