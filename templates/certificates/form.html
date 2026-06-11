@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Добавить сертификат{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div style="font-size: 12px; color: #5f6368;">
+            <a href="{{ url_for('certificates_list') }}">Сертификаты</a> /
+        </div>
+        <div class="page-title">Регистрация нового сертификата</div>
+    </div>
+</div>
+
+<form method="post" style="max-width: 900px;">
+    <div class="form-section">
+        <div class="form-section-title">Основные данные</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Серийный номер *</label>
+                <input type="text" name="serial_number" required
+                       placeholder="например: 0a:b3:7f:42...">
+            </div>
+            <div class="form-group">
+                <label>Тип подписи *</label>
+                <select name="signature_type" required>
+                    <option value="">— выберите —</option>
+                    {% for code, name in SIGNATURE_TYPES.items() %}
+                    <option value="{{ code }}">{{ name }} ({{ code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Назначение</label>
+            <input type="text" name="purpose"
+                   placeholder="например: сдача отчётности в ФНС, работа в ЕИС">
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <div class="form-section-title">Владелец и носитель</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Владелец сертификата *</label>
+                <select name="owner_id" required>
+                    <option value="">— выберите сотрудника —</option>
+                    {% for e in employees %}
+                    <option value="{{ e.id }}">{{ e.last_name }} {{ e.first_name }}{% if e.middle_name %} {{ e.middle_name }}{% endif %} — {{ e.position }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Удостоверяющий центр</label>
+                <select name="ca_id">
+                    <option value="">— не указан —</option>
+                    {% for ca in cas %}
+                    <option value="{{ ca.id }}">{{ ca.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Токен (носитель ключа)</label>
+            <select name="token_id">
+                <option value="">— без привязки —</option>
+                {% for t in tokens %}
+                <option value="{{ t.id }}">{{ t.token_type }} № {{ t.serial_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <div class="form-section-title">Сроки действия</div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Дата выдачи *</label>
+                <input type="date" name="issued_at" required>
+            </div>
+            <div class="form-group">
+                <label>Действителен с *</label>
+                <input type="date" name="valid_from" required>
+            </div>
+        </div>
+        
+        <div class="form-group" style="max-width: 50%;">
+            <label>Действителен до *</label>
+            <input type="date" name="valid_until" required>
+        </div>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Зарегистрировать сертификат</button>
+        <a href="{{ url_for('certificates_list') }}" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+{% endblock %}
