@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Токены{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Реестр токенов (носителей ключей)</div>
+        <div class="page-subtitle">Всего записей: {{ tokens|length }}</div>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Серийный номер</th>
+                <th>Тип</th>
+                <th>Модель</th>
+                <th>Дата приобретения</th>
+                <th>Статус</th>
+                <th>Текущий держатель</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in tokens %}
+        <tr>
+            <td><code>{{ t.serial_number }}</code></td>
+            <td>{{ t.token_type }}</td>
+            <td class="text-muted">{{ t.model or '—' }}</td>
+            <td>{{ t.purchase_date|rudate or '—' }}</td>
+            <td><span class="badge badge-{{ t.status }}">{{ TOKEN_STATUSES[t.status] }}</span></td>
+            <td>
+                {% if t.current_holder_id %}
+                    {{ t.last_name }} {{ t.first_name[0] }}.{% if t.middle_name %} {{ t.middle_name[0] }}.{% endif %}
+                {% else %}
+                    <span class="text-muted">— на хранении —</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align: center; padding: 32px; color: #9aa0a6;">Токены не найдены</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
