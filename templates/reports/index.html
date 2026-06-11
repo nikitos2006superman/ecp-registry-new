@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Отчёты{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Формирование отчётов</div>
+        <div class="page-subtitle">Экспорт данных в CSV</div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">📊</div>
+        <div class="stat-label">Активные сертификаты</div>
+        <div style="margin-top: 12px;">
+            <a href="{{ url_for('report_active_certs') }}" class="btn btn-primary btn-sm">Скачать CSV</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Доступные отчёты</div>
+    <ul style="margin-left: 20px; line-height: 1.8;">
+        <li><strong>Активные сертификаты</strong> — список всех действующих сертификатов ЭП с информацией о владельцах и сроках действия</li>
+    </ul>
+    <p class="text-muted" style="margin-top: 16px; font-size: 12px;">
+        ⚡ Отчёты выгружаются в формате CSV с разделителем «;» (совместимо с Excel).
+    </p>
+</div>
+{% endblock %}
