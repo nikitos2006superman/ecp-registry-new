@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Журнал аудита{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Журнал аудита действий пользователей</div>
+        <div class="page-subtitle">Последние 200 записей</div>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Время</th>
+                <th>Пользователь</th>
+                <th>Действие</th>
+                <th>Тип объекта</th>
+                <th>ID</th>
+                <th>Подробности</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in rows %}
+        <tr>
+            <td class="text-muted" style="font-family: monospace;">{{ r.timestamp[:19] }}</td>
+            <td>{{ r.username or '—' }}</td>
+            <td>
+                {% if r.action == 'create' %}<span class="text-success">создание</span>
+                {% elif r.action == 'update' %}<span class="text-warning">изменение</span>
+                {% elif r.action == 'revoke' %}<span class="text-danger">отзыв</span>
+                {% elif r.action == 'login' %}вход
+                {% elif r.action == 'logout' %}выход
+                {% elif r.action == 'export' %}экспорт
+                {% else %}{{ r.action }}{% endif %}
+            </td>
+            <td class="text-muted">{{ r.entity_type }}</td>
+            <td class="text-muted">{{ r.entity_id or '—' }}</td>
+            <td class="text-muted">{{ r.details or '—' }}</td>
+            <td class="text-muted" style="font-family: monospace; font-size: 12px;">{{ r.ip_address or '—' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
