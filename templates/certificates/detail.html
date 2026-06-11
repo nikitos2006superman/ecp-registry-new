@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% block title %}Сертификат {{ cert.serial_number[:12] }}…{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div style="font-size: 12px; color: #5f6368;">
+            <a href="{{ url_for('certificates_list') }}">Сертификаты</a> /
+        </div>
+        <div class="page-title">Сертификат № <code>{{ cert.serial_number }}</code></div>
+        <div class="page-subtitle">
+            <span class="badge badge-{{ cert.signature_type|lower }}">{{ cert.signature_type }}</span>
+            <span class="badge badge-{{ cert.status }}">{{ CERT_STATUSES[cert.status] }}</span>
+        </div>
+    </div>
+    {% if cert.status == 'active' and current_user.role in ('admin', 'hr_specialist') %}
+    <form method="post" action="{{ url_for('certificate_revoke', cert_id=cert.id) }}"
+          onsubmit="return confirm('Отозвать сертификат?')">
+        <input type="hidden" name="reason" value="Отозван вручную через интерфейс АИС">
+        <button type="submit" class="btn btn-danger">Отозвать сертификат</button>
+    </form>
+    {% endif %}
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div>
+        <div class="card">
+            <div class="card-header">Основные сведения</div>
+            <div class="detail-grid">
+                <div class="detail-label">Серийный номер</div>
+                <div class="detail-value"><code>{{ cert.serial_number }}</code></div>
+                
+                <div class="detail-label">Тип подписи</div>
+                <div class="detail-value">{{ SIGNATURE_TYPES[cert.signature_type] }}</div>
+                
+                <div class="detail-label">Удостоверяющий центр</div>
+                <div class="detail-value">{{ cert.ca_name or '—' }}</div>
+                
+                <div class="detail-label">Носитель</div>
+                <div class="detail-value">{{ cert.token_serial or 'Без привязки к токену' }}</div>
+                
+                <div class="detail-label">Назначение</div>
+                <div class="detail-value">{{ cert.purpose or '—' }}</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">Владелец</div>
+            <div class="detail-grid">
+                <div class="detail-label">ФИО</div>
+                <div class="detail-value">{{ cert.last_name }} {{ cert.first_name }}{% if cert.middle_name %} {{ cert.middle_name }}{% endif %}</div>
+                
+                <div class="detail-label">Должность</div>
+                <div class="detail-value">{{ cert.position }}</div>
+                
+                <div class="detail-label">Подразделение</div>
+                <div class="detail-value">{{ cert.department_name or '—' }}</div>
+            </div>
+        </div>
+        
+        {% if related_poa %}
+        <div class="card">
+            <div class="card-header">Связанные МЧД ({{ related_poa|length }})</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Номер МЧД</th>
+                        <th>Доверенное лицо</th>
+                        <th>Действует до</th>
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in related_poa %}
+                <tr>
+                    <td><a href="{{ url_for('poa_detail', poa_id=p.id) }}">{{ p.poa_number }}</a></td>
+                    <td>{{ p.last_name }} {{ p.first_name[0] }}.{% if p.middle_name %} {{ p.middle_name[0] }}.{% endif %}</td>
+                    <td>{{ p.valid_until|rudate }}</td>
+                    <td><span class="badge badge-{{ p.status }}">{{ p.status }}</span></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div>
+        <div class="card">
+            <div class="card-header">Сроки действия</div>
+            <div class="detail-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="detail-label">Выдан</div>
+                <div class="detail-value">{{ cert.issued_at|rudate }}</div>
+                
+                <div class="detail-label">Действует с</div>
+                <div class="detail-value">{{ cert.valid_from|rudate }}</div>
+                
+                <div class="detail-label">Действует до</div>
+                <div class="detail-value">{{ cert.valid_until|rudate }}</div>
+            </div>
+            
+            {% if cert.status == 'active' %}
+                {% set days = cert.valid_until|days_left %}
+                {% if days <= 7 %}
+                <div class="flash flash-danger" style="margin-top: 16px;">
+                    ⚠ Срок действия истекает через {{ days }} дн.
+                </div>
+                {% elif days <= 30 %}
+                <div class="flash flash-warning" style="margin-top: 16px;">
+                    Срок действия истекает через {{ days }} дн.
+                </div>
+                {% endif %}
+            {% elif cert.status == 'revoked' %}
+                <div class="flash flash-info" style="margin-top: 16px;">
+                    <strong>Отозван:</strong> {{ cert.revocation_date|rudate }}<br>
+                    <strong>Причина:</strong> {{ cert.revocation_reason }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
