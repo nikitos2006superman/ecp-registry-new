@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}МЧД{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Реестр машиночитаемых доверенностей</div>
+        <div class="page-subtitle">Всего записей: {{ items|length }}</div>
+    </div>
+</div>
+
+<form class="filters" method="get">
+    <label>Статус:</label>
+    <select name="status">
+        <option value="">Все</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Действует</option>
+        <option value="expired" {% if status == 'expired' %}selected{% endif %}>Истёк</option>
+        <option value="revoked" {% if status == 'revoked' %}selected{% endif %}>Отозван</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Применить</button>
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>№ МЧД</th>
+                <th>Доверенное лицо</th>
+                <th>Полномочия</th>
+                <th>Действует до</th>
+                <th>В реестре ФНС</th>
+                <th>Статус</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in items %}
+        {% set days = p.valid_until|days_left %}
+        {% set row_class = '' %}
+        {% if p.status == 'active' and days <= 14 %}
+            {% set row_class = 'row-warning' if days > 7 else 'row-danger' %}
+        {% endif %}
+        <tr class="{{ row_class }}">
+            <td><strong>{{ p.poa_number }}</strong></td>
+            <td>
+                {{ p.last_name }} {{ p.first_name[0] }}.{% if p.middle_name %} {{ p.middle_name[0] }}.{% endif %}
+                <div class="text-muted" style="font-size: 12px;">{{ p.position }}</div>
+            </td>
+            <td style="max-width: 280px;">{{ p.powers_description }}</td>
+            <td>
+                {{ p.valid_until|rudate }}
+                {% if p.status == 'active' %}
+                    <div class="text-muted" style="font-size: 12px;">осталось {{ days }} дн.</div>
+                {% endif %}
+            </td>
+            <td>{% if p.fns_registered %}<span class="text-success">✓ Да</span>{% else %}<span class="text-muted">— нет</span>{% endif %}</td>
+            <td><span class="badge badge-{{ p.status }}">{{ p.status }}</span></td>
+            <td><a href="{{ url_for('poa_detail', poa_id=p.id) }}">Открыть →</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align: center; padding: 32px; color: #9aa0a6;">МЧД не найдены</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
