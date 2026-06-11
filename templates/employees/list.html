@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Сотрудники{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">Сотрудники филиала</div>
+        <div class="page-subtitle">Всего записей: {{ employees|length }}</div>
+    </div>
+</div>
+
+<form class="filters" method="get">
+    <label>Поиск:</label>
+    <input type="text" name="q" value="{{ search }}" placeholder="фамилия или имя">
+    <button type="submit" class="btn btn-primary btn-sm">Найти</button>
+    {% if search %}<a href="{{ url_for('employees_list') }}" class="btn btn-secondary btn-sm">Сбросить</a>{% endif %}
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Должность</th>
+                <th>Подразделение</th>
+                <th>Действующих ЭП</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for e in employees %}
+        <tr>
+            <td>
+                {{ e.last_name }} {{ e.first_name }}{% if e.middle_name %} {{ e.middle_name }}{% endif %}
+                {% if e.email %}<div class="text-muted" style="font-size: 12px;">{{ e.email }}</div>{% endif %}
+            </td>
+            <td>{{ e.position }}</td>
+            <td class="text-muted">{{ e.department_name or '—' }}</td>
+            <td>
+                {% if e.active_certs > 0 %}
+                    <span class="text-success">{{ e.active_certs }}</span>
+                {% else %}
+                    <span class="text-muted">0</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if e.is_active %}
+                    <span class="badge badge-active">Работает</span>
+                {% else %}
+                    <span class="badge badge-revoked">Уволен</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
