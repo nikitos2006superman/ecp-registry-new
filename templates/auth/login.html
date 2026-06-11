@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+
+{% block content_anon %}
+<div class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <h1>АИС учёта ЭЦП</h1>
+            <p>Западный филиал РАНХиГС</p>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        
+        <form method="post">
+            <div class="form-group">
+                <label>Имя пользователя</label>
+                <input type="text" name="username" autofocus required>
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Войти</button>
+        </form>
+        
+        <div class="login-credentials">
+            <strong>Учётные записи для демонстрации:</strong><br>
+            admin / admin123 — Администратор<br>
+            kadry / kadry123 — Кадровая служба<br>
+            director / director123 — Сотрудник
+        </div>
+    </div>
+</div>
+{% endblock %}
