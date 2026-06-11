@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}МЧД {{ poa.poa_number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div style="font-size: 12px; color: #5f6368;">
+            <a href="{{ url_for('poa_list') }}">МЧД</a> /
+        </div>
+        <div class="page-title">МЧД № {{ poa.poa_number }}</div>
+        <div class="page-subtitle">
+            <span class="badge badge-{{ poa.status }}">{{ poa.status }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Доверенное лицо</div>
+    <div class="detail-grid">
+        <div class="detail-label">ФИО</div>
+        <div class="detail-value">{{ poa.last_name }} {{ poa.first_name }}{% if poa.middle_name %} {{ poa.middle_name }}{% endif %}</div>
+        
+        <div class="detail-label">Должность</div>
+        <div class="detail-value">{{ poa.position }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Полномочия</div>
+    <div class="detail-grid">
+        <div class="detail-label">Описание</div>
+        <div class="detail-value">{{ poa.powers_description }}</div>
+        
+        <div class="detail-label">Коды полномочий</div>
+        <div class="detail-value"><code>{{ poa.powers_codes or '—' }}</code></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Сроки действия и регистрация</div>
+    <div class="detail-grid">
+        <div class="detail-label">Выдана</div>
+        <div class="detail-value">{{ poa.issued_at|rudate }}</div>
+        
+        <div class="detail-label">Действует с</div>
+        <div class="detail-value">{{ poa.valid_from|rudate }}</div>
+        
+        <div class="detail-label">Действует до</div>
+        <div class="detail-value">{{ poa.valid_until|rudate }}</div>
+        
+        <div class="detail-label">Регистрация в ФНС</div>
+        <div class="detail-value">
+            {% if poa.fns_registered %}
+                <span class="text-success">✓ Зарегистрирована</span>
+            {% else %}
+                <span class="text-muted">Не зарегистрирована</span>
+            {% endif %}
+        </div>
+        
+        <div class="detail-label">XML-файл</div>
+        <div class="detail-value">
+            {% if poa.xml_file_path %}
+                <a href="#">Скачать XML</a>
+            {% else %}
+                <span class="text-muted">Не приложен</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
