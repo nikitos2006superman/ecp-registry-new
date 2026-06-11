@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}АИС учёта ЭЦП{% endblock %} — Западный филиал РАНХиГС</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% if current_user %}
+    <header class="topbar">
+        <div class="topbar-left">
+            <span class="logo">АИС учёта ЭЦП</span>
+            <span class="logo-sub">Западный филиал РАНХиГС</span>
+        </div>
+        <div class="topbar-right">
+            <span class="user-info">
+                <span class="user-name">{{ current_user_name }}</span>
+                <span class="user-role">({{ current_user_role }})</span>
+            </span>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Выход</a>
+        </div>
+    </header>
+    
+    <div class="layout">
+        <nav class="sidebar">
+            <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">▦</span> Главная
+            </a>
+            <a href="{{ url_for('certificates_list') }}" class="nav-item {% if request.endpoint and 'certificate' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon">⬚</span> Сертификаты
+            </a>
+            <a href="{{ url_for('poa_list') }}" class="nav-item {% if request.endpoint and 'poa' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon">▤</span> МЧД
+            </a>
+            <a href="{{ url_for('tokens_list') }}" class="nav-item {% if request.endpoint and 'tokens' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon">▣</span> Токены
+            </a>
+            {% if current_user.role in ('admin', 'hr_specialist') %}
+            <a href="{{ url_for('employees_list') }}" class="nav-item {% if request.endpoint and 'employees' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon">▦</span> Сотрудники
+            </a>
+            <a href="{{ url_for('reports_index') }}" class="nav-item {% if request.endpoint and 'report' in request.endpoint %}active{% endif %}">
+                <span class="nav-icon">▩</span> Отчёты
+            </a>
+            {% endif %}
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('audit_log_view') }}" class="nav-item {% if request.endpoint == 'audit_log_view' %}active{% endif %}">
+                <span class="nav-icon">⊟</span> Журнал аудита
+            </a>
+            {% endif %}
+        </nav>
+        
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        {% block content_anon %}{% endblock %}
+    {% endif %}
+</body>
+</html>
